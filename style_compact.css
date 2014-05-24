@@ -1,0 +1,147 @@
+body {
+	background-color: #ffffff;
+	color: #000000;	
+	font-family: verdana;
+	font-size: 10px;
+	margin: 0px;
+	padding: 0px;
+	line-height: 130%;
+}
+
+#wrapper {
+	width: 100%;
+	margin: 0 auto;
+}
+
+.fail {
+width: 100%;
+background: #FFBABA;
+line-height: 14px;
+text-align: center;
+color: #D8000C;
+border: 1px solid;
+margin: 5px;
+padding: 4px 0px 4px 0px;
+} 
+
+h1 {
+	margin: 5px 5px 5px 5px;
+	text-align: center;
+	font-size: 16px;
+	border: 1px solid #000000;		
+	padding: 10px 0px 10px 0px;
+	background-color: #0179b5;	
+	color: #FFFFFF;		
+	line-height: 100%;
+}
+
+h2 {
+	margin: 0px 0px 0px 0px;
+	width: 100%;
+	background-color: #0179b5;
+	color: #FFFFFF;		
+	padding: 1px 0px 1px 0px;
+	font-size: 10px;	
+	line-height: 130%;
+	text-align: center;
+	border-bottom: 1px solid #000;
+}
+
+#left {
+
+	margin: 5px 5px 5px 5px;
+	border: 1px solid #000000;
+	padding: 0px 0px 4px 0px;
+	background-color: #cadceb;
+	color: #000;		
+	line-height: 100%;
+}
+
+#right {
+	margin: 5px 5px 5px 5px;
+	border: 1px solid #000000;
+	padding: 0px;
+	background-color: #cadceb;
+	color: #000;		
+	line-height: 100%;
+}
+
+#footer {
+	margin: 5px 5px 5px 5px;
+	border: 1px solid #000000;
+	padding: 4px 0px 4px 0px;
+	background-color: #0179b5;
+	color: #FFFFFF;		
+	line-height: 100%;
+	text-align: center;
+}
+
+p {
+	margin: 8px 10px 5px 10px;
+}
+
+input, select, button{
+	font-family: verdana;
+	font-size: 11px;
+	background-color: #ffffff;
+	color: #000000;
+	border: 1px solid #000000;
+	margin-bottom: 5px;
+}
+
+#left form {
+	margin: 8px 10px 5px 10px;
+}
+
+#left label {
+	padding-bottom: 5px;
+}
+
+#right form {
+	margin: 0px;
+}
+
+#right table {
+	width: 100%;
+	margin-bottom: 0px;
+}
+#right th {
+	color: #0179b5;
+	text-align: left;
+	padding: 3px 3px 3px 3px;
+	background: #fff;
+}
+
+#right td {
+	color: #000;
+	text-align: left;
+	padding: 3px 3px 3px 3px;
+}
+
+#right tr.row1 {background: #d8e4ee;}
+
+A:link {text-decoration: none; color: #000; }
+A:visited {text-decoration: none}
+A:active {text-decoration: none}
+A:hover {text-decoration: underline; color: #0179b5;}
+
+#footer A:link {text-decoration: none; color: #FFF; }
+#footer A:visited {text-decoration: none; color: #FFF;}
+#footer A:active {text-decoration: none; color: #FFF;}
+#footer A:hover {text-decoration: underline; color: #FFF;}
+
+#right img {
+	border: 0;
+}
+#right span.red {
+	color: #F00;
+	font-weight: bold; 
+}
+#right span.red1 {
+	color: #F00;
+
+}
+#right span.normal {
+
+}
+
