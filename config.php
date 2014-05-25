@@ -25,7 +25,7 @@ $oreMap_07 = array(
     1 => array('name' => 'Runite', 'm' => -0.375,            'b' => 1500)
 );
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 
 ?>
