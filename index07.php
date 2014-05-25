@@ -6,7 +6,7 @@ require('config.php');
 $time = explode(' ', microtime());
 $startTime = $time[1] + $time[0];
 
-$defaultOre = isset($_COOKIE['rtdefaultore']) ? $_COOKIE['rtdefaultore'] : 1; // Sets default selected ore (from $oreMap_RS)
+$defaultOre = isset($_COOKIE['rt07defaultore']) ? $_COOKIE['rt07defaultore'] : 1; // Sets default selected ore (from $oreMap_07 in config.php)
 
 // Sets the style or if a style has just been selected, set cookie and refresh.
 $style = !empty($_COOKIE['rtstyle']) ? $_COOKIE['rtstyle'] : 'style';
@@ -20,41 +20,22 @@ if (isset($_GET['style'])) {
         break;
     }
     setCookie('rtstyle', $style, time() + 604800);  
-    header('Location: index.php');
+    header('Location: index07.php');
 }
-
-/*
-Old function to retrieve world from the world population. No longer functional due to removal of HTML based world selection screen.
 
 function retrieveWorldPop($world) {
-    $i = 0;
-    $ii = 0;
-    while ($i <= 4 && $ii != 1) {
-        $content = file_get_contents('http://www.runescape.com/l=' . $i . '/slu.ws'); 
-        preg_match('/ ' . $world . '<\/a>\n<\/td>\n<td>([0-9]*)<\/td>/', $content, $matches);
-        if (isset($matches[1])) {
-            $population = $matches[1];
-            break;
-        } else {
-            preg_match('/ ' . $world . '\n\n<\/td>\n<td>(FULL)<\/td>/', $content, $matches);
-            if ($matches) {
-                $population = '2000';
-                break;
-            }
-        }
-    $i++;
+    $content = file_get_contents('http://oldschool.runescape.com/slu');
+    preg_match('/e\((?:[0-9]+,)(?:true|false),(?:[0-7]+),(?:[^,]+),([0-9]+),(?:[^,]+),(?:[^,]+),"Old School ' . $world . '",(?:[^,]+),(?:[^\)]+)\);/', $content, $matches);
+    if (isset($matches[1])) {
+        return $matches[1];
+    } else {
+        return null;
     }
-    
-    if (isset($population) && isset($i)) {
-        return array($population, $i);
-    }
-    
 }
-*/
 
 function timeLeft($population, $oreID) {
-    global $oreMap_RS;
-    return round($oreMap_RS[$oreID]['m'] * $population + $oreMap_RS[$oreID]['b']); // timeLeft = m * population + b
+    global $oreMap_07;
+    return round($oreMap_07[$oreID]['m'] * $population + $oreMap_07[$oreID]['b']); // timeLeft = m * population + b
 }
     
 function scriptDuration($startTime) {
@@ -74,11 +55,11 @@ if (isset($_GET['delete'])) {
         'id' => (int) $_GET['delete'],
         'ip' => $_SERVER['REMOTE_ADDR']
     ));
-    header('Location: index.php');
+    header('Location: index07.php');
 }
 
 if (isset($_GET['remine'])) {
-    $stmt = $conn->prepare('SELECT world, ore, population FROM timers  WHERE (id = :id AND INET_NTOA(ip) = :ip AND version = 0) LIMIT 1');
+    $stmt = $conn->prepare('SELECT world, ore, population FROM timers  WHERE (id = :id AND INET_NTOA(ip) = :ip AND version = 1) LIMIT 1');
     $stmt->execute(array(
         'id' => (int) $_GET['remine'],
         'ip' => $_SERVER['REMOTE_ADDR']
@@ -97,38 +78,36 @@ if (isset($_GET['remine'])) {
         'ip'           => $_SERVER['REMOTE_ADDR']
     ));
 
-    header('Location: index.php');
+    header('Location: index07.php');
 }
 
 // New timer
-if (isset($_POST['world']) && isset($_POST['population'])) {
-    /*
-    $worldinfo = retrieveWorldPop(intval($_POST['world']));
-    $population = $worldinfo[0];
-    $language = $worldinfo[1];
-    */
-
-    $population = (int) $_POST['population'];
-    $language = 0;
+if (isset($_POST['world'])) {
+    
+    $population = retrieveWorldPop( (int)$_POST['world']);
+    if ($population === null) {
+        exit('Are you sure that \'' . (int)$_POST['world'] . '\' is a valid world number? If it is, world population parser has been broken, most likely due to an update on the old-school world selection screen. Please contact me at TexasMd91@gmail.com and I\'ll look into it. Thanks!');
+    }
+    $language = 0; // Only one language for old-school scape.
 
     $timeLeft = timeLeft($population, (int) $_POST['ore']);
     $scriptDuration = scriptDuration($startTime);
 
-    setCookie('rtdefaultore', (int) $_POST['ore'], time() + 604800);
+    setCookie('rt07defaultore', (int) $_POST['ore'], time() + 604800);
     try {
-        $stmt = $conn->prepare('INSERT INTO timers(ip, ore, time, timefinished, world, population, version) VALUES (INET_ATON(:ip), :ore, :now, :timeFinished, :world, :population, 0)');
+        $stmt = $conn->prepare('INSERT INTO timers(ip, ore, time, timefinished, world, population, version) VALUES (INET_ATON(:ip), :ore, :now, :timeFinished, :world, :population, 1)');
         $stmt->execute(array(
             'ip'           => $_SERVER['REMOTE_ADDR'],
             'ore'          => (int) $_POST['ore'],
             'now'          => (int) $_SERVER['REQUEST_TIME'],
             'timeFinished' => (int) ($_SERVER['REQUEST_TIME'] + $timeLeft + $scriptDuration),
             'world'        => (int) $_POST['world'],
-            'population'   => (int) $_POST['population']
+            'population'   => $population
         ));
     } catch(PDOException $e) {
         echo "Error " . $e->getMessage();
     }
-    // header('Location: index.php');   Not needed, will be in database by time rest of page loads.
+    // header('Location: index07.php');   Not needed, will be in database by time rest of page loads.
 }
     
 ?>
@@ -142,7 +121,7 @@ if (isset($_POST['world']) && isset($_POST['population'])) {
     <meta name="description" content="A manageable rune ore respawn timer list to help you mine the most ores in Runescape." />
     <style type="text/css">
         <?php echo '#s_' . $style . ' { font-weight: bold; pointer-events: none; cursor: default; }'; ?>
-        #s_runescape { font-weight: bold; pointer-events: none; cursor: default; }
+        #s_07scape { font-weight: bold; pointer-events: none; cursor: default; }
     </style>
     <script language="javascript" type="text/javascript">
         var Timer = function(currenttimestamp, timestamp,databaseId) {       
@@ -171,7 +150,7 @@ if (isset($_POST['world']) && isset($_POST['population'])) {
                         reminediv = document.getElementById('remineore' + thisObject.databaseId);
                         newlink = document.createElement('a');
                         newlink.setAttribute('id', 'reminelink' + thisObject.databaseId);
-                        newlink.setAttribute('href', 'index.php?remine=' + thisObject.databaseId);
+                        newlink.setAttribute('href', 'index07.php?remine=' + thisObject.databaseId);
                         reminediv.appendChild(newlink);
                         
                         document.getElementById('reminelink' + thisObject.databaseId).innerHTML='<img src="images/action_refresh.png" />';
@@ -207,7 +186,7 @@ if (isset($_POST['world']) && isset($_POST['population'])) {
 <body>
     <div id="wrapper">
         <div id="footer" style="font-size: 10px;"><a href="index07.php?style=style" id="s_style">Full View</a> | <a href="index07.php?style=style_compact" id="s_style_compact">Compact View</a> :: <a href="index.php" id="s_runescape">RuneScape</a> | <a href="index07.php" id="s_07scape">07scape</a></div>
-        <h1>RuneTimer</h1>
+        <h1>RuneTimer07</h1>
         <div id="left">  
             <h2>New Ore Timer</h2>
             <p>
@@ -215,13 +194,10 @@ if (isset($_POST['world']) && isset($_POST['population'])) {
                     <label>World: </label> 
                         <input name="world" type="text" size="15" maxlength="3" id="worldinput" />
                     <br />
-                    <label>Population: </label> 
-                        <input name="population" type="text" size="15" maxlength="10" id="popinput" />
-                    <br />
                     <label>Type: </label>
                         <select name="ore" id="oreinput" />
                         <?php
-                            foreach($oreMap_RS as $id => $ore) {
+                            foreach($oreMap_07 as $id => $ore) {
                                 if ($ore['name'] != null) {
                                     if ($id == $defaultOre) {
                                         echo '<option value=' . $id . ' selected>' . $ore['name'] . '</option>';
@@ -240,7 +216,7 @@ if (isset($_POST['world']) && isset($_POST['population'])) {
         <div id="right">
             <h2>Timer List</h2>
            
-            <form action="index.php" method="get" name="alter">  
+            <form action="index07.php" method="get" name="alter">  
                 <table id="timertable" cellspacing="0">
                     <tr>
                         <th scope="col" width="22px" abbr=""></th>
@@ -256,7 +232,7 @@ if (isset($_POST['world']) && isset($_POST['population'])) {
                         SELECT timers.id, INET_NTOA(timers.ip) AS ip, timers.time, timers.timefinished, timers.world, timers.ore, languages.img as language
                         FROM timers 
                         LEFT JOIN languages ON timers.language = languages.id
-                        WHERE ip = INET_ATON(:ip) AND version = 0
+                        WHERE ip = INET_ATON(:ip) AND version = 1
                         ORDER BY timefinished ASC'
                     );
                     $stmt->execute(array('ip' => $_SERVER['REMOTE_ADDR']));
@@ -285,15 +261,15 @@ if (isset($_POST['world']) && isset($_POST['population'])) {
                             echo '<td><span class="red" id="timer' . $row['id'] . '">Ore Available</span></td>';
                         }
 
-                        echo '<td>' . $oreMap_RS[$row['ore']]['name'] . '</td>';
+                        echo '<td>' . $oreMap_07[$row['ore']]['name'] . '</td>';
 
                         if ($remineOre) {
-                            echo '<td id="remineore' . $row['id'] . '"><a href="index.php?remine=' . $row['id'] . '" id="remine' . $row['id'] . '"><img src="images/action_refresh.png" /></a></td>'; 
+                            echo '<td id="remineore' . $row['id'] . '"><a href="index07.php?remine=' . $row['id'] . '" id="remine' . $row['id'] . '"><img src="images/action_refresh.png" /></a></td>'; 
                         } else { 
                             echo '<td id="remineore' . $row['id'] . '"></td>';
                         }
 
-                        echo '<td><a href="index.php?delete=' . $row['id'] . '"><img src="images/action_delete.png" /></a></td>';
+                        echo '<td><a href="index07.php?delete=' . $row['id'] . '"><img src="images/action_delete.png" /></a></td>';
                         echo '</tr>';
 
                         $i++; 
