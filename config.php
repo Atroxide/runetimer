@@ -3,14 +3,12 @@
 // Set this to your own database values. Also make sure to run the installation .SQL file.
 $db = array (
     'host' => 'localhost',
-    'user' => 'YOURUSERNAME',
-    'pass' => 'YOURPASSWORD',
-    'database' => 'runetimer',
+    'user' => 'runetimer',
+    'pass' => 'DMv6JKXoxVv2gKPO',
+    'database' => 'web',
 );
 
 // The two $oreMap variables below map the ores to their respawn times. You can also add anything else you would like time that respawns based on the population linearly. (Bosses, other resources, etc.). Uses just a simple timeleft(in seconds) = m * population + b equation.
-
-using the equation timeLeft(in seconds) = m * population + b. 
 
 // RuneScape
 $oreMap_RS = array(

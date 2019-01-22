@@ -25,7 +25,7 @@ if (isset($_GET['style'])) {
 
 function retrieveWorldPop($world) {
     $content = file_get_contents('http://oldschool.runescape.com/slu');
-    preg_match('/e\((?:[0-9]+,)(?:true|false),(?:[0-7]+),(?:[^,]+),([0-9]+),(?:[^,]+),(?:[^,]+),"Old School ' . $world . '",(?:[^,]+),(?:[^\)]+)\);/', $content, $matches);
+    preg_match('/<a id=\'slu-world-(?:[0-9]+\')(?:[^>]+)>Old School ' . $world . '<\/a>(?:[^0-9]+)([0-9]+) players<\/td>/', $content, $matches);
     if (isset($matches[1])) {
         return $matches[1];
     } else {
@@ -236,7 +236,7 @@ if (isset($_POST['world'])) {
                         ORDER BY timefinished ASC'
                     );
                     $stmt->execute(array('ip' => $_SERVER['REMOTE_ADDR']));
-
+                    
                     $i = 0;
                     while($row = $stmt->fetch()) {
                         $timeLeft = ($row['timefinished'] - $_SERVER['REQUEST_TIME']);
