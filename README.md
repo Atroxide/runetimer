@@ -42,7 +42,7 @@ Now open up config.php in a text editor and provide your database's username, pa
 ```sql
 $db = array (
     'host' => 'localhost',
-    'user' => 'atroxide',
+    'user' => 'YOURUSERNAME',
     'pass' => 'MYPASSWORD',
     'database' => 'runetimer',
 );
