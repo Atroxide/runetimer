@@ -25,7 +25,13 @@ if (isset($_GET['style'])) {
 
 function retrieveWorldPop($world) {
     $content = file_get_contents('http://oldschool.runescape.com/slu');
-    preg_match('/<a id=\'slu-world-(?:[0-9]+\')(?:[^>]+)>Old School ' . $world . '<\/a>(?:[^0-9]+)([0-9]+) players<\/td>/', $content, $matches);
+    
+    if ($world < 300) {
+      preg_match('/<a id=\'slu-world-(?:[0-9]+\')(?:[^>]+)>Old School ' . $world . '<\/a>(?:[^0-9]+)([0-9]+) players<\/td>/', $content, $matches);
+    } else {
+      preg_match('/<a id=\'slu-world-(?:[0-9]+\')(?:[^>]+)>Old School ' . ($world - 300) . '<\/a>(?:[^0-9]+)([0-9]+) players<\/td>/', $content, $matches);
+    }
+    
     if (isset($matches[1])) {
         return $matches[1];
     } else {
@@ -83,25 +89,28 @@ if (isset($_GET['remine'])) {
 
 // New timer
 if (isset($_POST['world'])) {
+    // Sanitize user input
+    $world = (int)filter_var($_POST['world'], FILTER_SANITIZE_NUMBER_INT);
+    $ore = (int)filter_var($_POST['ore'], FILTER_SANITIZE_NUMBER_INT);
     
-    $population = retrieveWorldPop( (int)$_POST['world']);
+    $population = retrieveWorldPop($world);
     if ($population === null) {
-        exit('Are you sure that \'' . (int)$_POST['world'] . '\' is a valid world number? If it is, world population parser has been broken, most likely due to an update on the old-school world selection screen. Please contact me at TexasMd91@gmail.com and I\'ll look into it. Thanks!');
+        exit('Are you sure that \'' . $world . '\' is a valid world number? If it is, world population parser has been broken, most likely due to an update on the old-school world selection screen. Please contact me at TexasMd91@gmail.com and I\'ll look into it. Thanks!');
     }
     $language = 0; // Only one language for old-school scape.
 
-    $timeLeft = timeLeft($population, (int) $_POST['ore']);
+    $timeLeft = timeLeft($population, $ore);
     $scriptDuration = scriptDuration($startTime);
 
-    setCookie('rt07defaultore', (int) $_POST['ore'], time() + 604800);
+    setCookie('rt07defaultore', $ore, time() + 604800);
     try {
         $stmt = $conn->prepare('INSERT INTO timers(ip, ore, time, timefinished, world, population, version) VALUES (INET_ATON(:ip), :ore, :now, :timeFinished, :world, :population, 1)');
         $stmt->execute(array(
             'ip'           => $_SERVER['REMOTE_ADDR'],
-            'ore'          => (int) $_POST['ore'],
+            'ore'          => $ore,
             'now'          => (int) $_SERVER['REQUEST_TIME'],
             'timeFinished' => (int) ($_SERVER['REQUEST_TIME'] + $timeLeft + $scriptDuration),
-            'world'        => (int) $_POST['world'],
+            'world'        => $world,
             'population'   => $population
         ));
     } catch(PDOException $e) {
@@ -192,7 +201,7 @@ if (isset($_POST['world'])) {
             <p>
                 <form id="newworld" method="post" action="">
                     <label>World: </label> 
-                        <input name="world" type="text" size="15" maxlength="3" id="worldinput" />
+                        <input name="world" type="text" size="15" maxlength="3" id="worldinput"  autocomplete="off" pattern="^([1-9]|[1-9][0-9]|[1-5][0-9][0-9])$" title="Enter a valid world number. Both 301 and 1 are valid formats" required autofocus/>
                     <br />
                     <label>Type: </label>
                         <select name="ore" id="oreinput" />
