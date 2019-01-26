@@ -103,27 +103,30 @@ if (isset($_GET['remine'])) {
 // New timer
 if (isset($_POST['world']) && isset($_POST['population'])) {
     /*
-    $worldinfo = retrieveWorldPop(intval($_POST['world']));
+    $worldinfo = retrieveWorldPop($world));
     $population = $worldinfo[0];
     $language = $worldinfo[1];
     */
 
-    $population = (int) $_POST['population'];
+    // Sanitize user input
+    $world = (int)filter_var($_POST['world'], FILTER_SANITIZE_NUMBER_INT);
+    $ore = (int)filter_var($_POST['ore'], FILTER_SANITIZE_NUMBER_INT);
+    $population = (int)filter_var($_POST['population'], FILTER_SANITIZE_NUMBER_INT);
     $language = 0;
 
-    $timeLeft = timeLeft($population, (int) $_POST['ore']);
+    $timeLeft = timeLeft($population, $ore);
     $scriptDuration = scriptDuration($startTime);
 
-    setCookie('rtdefaultore', (int) $_POST['ore'], time() + 604800);
+    setCookie('rtdefaultore', $ore, time() + 604800);
     try {
         $stmt = $conn->prepare('INSERT INTO timers(ip, ore, time, timefinished, world, population, version) VALUES (INET_ATON(:ip), :ore, :now, :timeFinished, :world, :population, 0)');
         $stmt->execute(array(
             'ip'           => $_SERVER['REMOTE_ADDR'],
-            'ore'          => (int) $_POST['ore'],
+            'ore'          => $ore,
             'now'          => (int) $_SERVER['REQUEST_TIME'],
             'timeFinished' => (int) ($_SERVER['REQUEST_TIME'] + $timeLeft + $scriptDuration),
-            'world'        => (int) $_POST['world'],
-            'population'   => (int) $_POST['population']
+            'world'        => $world,
+            'population'   => $population
         ));
     } catch(PDOException $e) {
         echo "Error " . $e->getMessage();
@@ -213,10 +216,10 @@ if (isset($_POST['world']) && isset($_POST['population'])) {
             <p>
                 <form id="newworld" method="post" action="">
                     <label>World: </label> 
-                        <input name="world" type="text" size="15" maxlength="3" id="worldinput" />
+                        <input name="world" type="text" size="15" maxlength="3" id="worldinput" autocomplete="off" pattern="^([1-9]|[1-9][0-9]|[1-9][0-9][0-9])$" title="Enter a valid world number" required autofocus/>
                     <br />
                     <label>Population: </label> 
-                        <input name="population" type="text" size="15" maxlength="10" id="popinput" />
+                        <input name="population" type="text" size="11" maxlength="4" id="popinput" autocomplete="off" pattern="^([0-9]|[1-9][0-9]|[1-9][0-9][0-9]|1[0-9][0-9][0-9]|2000)$" title="Enter a valid population from 0 to 2000"/>
                     <br />
                     <label>Type: </label>
                         <select name="ore" id="oreinput" />
